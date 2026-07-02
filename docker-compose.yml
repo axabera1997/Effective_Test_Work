@@ -1,0 +1,73 @@
+services:
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: a@e.com
+      PGADMIN_DEFAULT_PASSWORD: admpass
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    ports:
+      - "8088:80"
+    depends_on:
+      - db
+    networks:
+      - localnet
+
+  db:
+    image: postgres:17
+    container_name: dbcont
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # - ./pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - localnet
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    container_name: sapp
+    build:
+      # путь до докерфайла
+      context: ./
+      # докерфайл
+      dockerfile: ServerDockerFile
+    image: app
+    ports:
+      - "8080:8080"
+    environment:
+      MIGRATIONS_PATH: "file://migrations"
+      BASE_HOST: db
+      DB_HOST: ${DB_HOST}
+      DB_PORT: 5432
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      APP_HOST: ${APP_HOST} #         "0.0.0.0" # Сервер будет слушать все интерфейсы
+
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - localnet
+
+volumes:
+  postgres_data:
+  pgadmin_data:
+
+
+networks:
+  localnet:
+    driver: bridge
+    name: netto

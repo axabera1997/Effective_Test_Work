@@ -1,0 +1,385 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
+    },
+    "paths": {
+        "/": {
+            "get": {
+                "description": "Checks if database connection is alive",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Database health check",
+                "responses": {
+                    "200": {
+                        "description": "Database is reachable",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Database connection error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/add": {
+            "post": {
+                "description": "Создает новую подписку с валидацией данных",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subscriptions"
+                ],
+                "summary": "Создание подписки",
+                "parameters": [
+                    {
+                        "description": "Данные подписки",
+                        "name": "subscription",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Subscription"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Подписка успешно создана",
+                        "schema": {
+                            "$ref": "#/definitions/models.RetStruct"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверные данные (отсутствуют обязательные поля, неверный формат UUID, даты)",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/delete": {
+            "delete": {
+                "description": "Удаляет подписку по переданным данным",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Удаление подписки",
+                "parameters": [
+                    {
+                        "description": "Данные подписки для удаления",
+                        "name": "subscription",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Subscription"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешное удаление",
+                        "schema": {
+                            "$ref": "#/definitions/models.RetStruct"
+                        }
+                    },
+                    "204": {
+                        "description": "Не найдено записей для удаления",
+                        "schema": {
+                            "$ref": "#/definitions/models.RetStruct"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат запроса",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка сервера",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/list": {
+            "get": {
+                "description": "Возвращает список всех подписок с поддержкой пагинации",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subscriptions"
+                ],
+                "summary": "Получение списка подписок",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Номер страницы (по умолчанию 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Размер страницы (по умолчанию из конфига)",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список подписок",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Subscription"
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "Подписки не найдены",
+                        "schema": {
+                            "$ref": "#/definitions/models.RetStruct"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/read": {
+            "post": {
+                "description": "Возвращает подписки, соответствующие заданным критериям поиска",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subscriptions"
+                ],
+                "summary": "Поиск подписок",
+                "parameters": [
+                    {
+                        "description": "Критерии поиска подписок",
+                        "name": "criteria",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Subscription"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Найденные подписки",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Subscription"
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "Подписки не найдены",
+                        "schema": {
+                            "$ref": "#/definitions/models.RetStruct"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат данных",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/summa": {
+            "post": {
+                "description": "Возвращает сумму подписок по заданным параметрам",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Расчет суммы подписок",
+                "parameters": [
+                    {
+                        "description": "Параметры для расчета суммы",
+                        "name": "subscription",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Subscription"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешный расчет суммы",
+                        "schema": {
+                            "$ref": "#/definitions/models.RetStruct"
+                        }
+                    },
+                    "204": {
+                        "description": "Подписки не найдены",
+                        "schema": {
+                            "$ref": "#/definitions/models.RetStruct"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат запроса или отсутствуют обязательные поля",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка сервера",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/update": {
+            "put": {
+                "description": "Обновляет данные подписки по заданным критериям (обязательные поля: service_name и user_id)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subscriptions"
+                ],
+                "summary": "Обновление подписки",
+                "parameters": [
+                    {
+                        "description": "Данные для обновления подписки",
+                        "name": "subscription",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Subscription"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Подписка успешно обновлена",
+                        "schema": {
+                            "$ref": "#/definitions/models.RetStruct"
+                        }
+                    },
+                    "204": {
+                        "description": "Подписка не найдена",
+                        "schema": {
+                            "$ref": "#/definitions/models.RetStruct"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверные данные (отсутствуют обязательные поля)",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "models.RetStruct": {
+            "type": "object",
+            "properties": {
+                "cunt": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Subscription": {
+            "type": "object",
+            "properties": {
+                "edt": {
+                    "type": "string"
+                },
+                "end_date": {
+                    "description": "“start_date”: “07-2025”",
+                    "type": "string"
+                },
+                "price": {
+                    "description": "“price”: 400,",
+                    "type": "integer"
+                },
+                "sdt": {
+                    "type": "string"
+                },
+                "service_name": {
+                    "description": "“Yandex Plus”,",
+                    "type": "string"
+                },
+                "start_date": {
+                    "description": "“start_date”: “07-2025”",
+                    "type": "string"
+                },
+                "user_id": {
+                    "description": "“user_id”: “60601fee-2bf1-4721-ae6f-7636e79a0cba”,",
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

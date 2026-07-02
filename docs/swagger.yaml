@@ -1,0 +1,254 @@
+definitions:
+  models.RetStruct:
+    properties:
+      cunt:
+        format: int64
+        type: integer
+      name:
+        type: string
+    type: object
+  models.Subscription:
+    properties:
+      edt:
+        type: string
+      end_date:
+        description: '“start_date”: “07-2025”'
+        type: string
+      price:
+        description: '“price”: 400,'
+        type: integer
+      sdt:
+        type: string
+      service_name:
+        description: “Yandex Plus”,
+        type: string
+      start_date:
+        description: '“start_date”: “07-2025”'
+        type: string
+      user_id:
+        description: '“user_id”: “60601fee-2bf1-4721-ae6f-7636e79a0cba”,'
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /:
+    get:
+      description: Checks if database connection is alive
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Database is reachable
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Database connection error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Database health check
+  /add:
+    post:
+      consumes:
+      - application/json
+      description: Создает новую подписку с валидацией данных
+      parameters:
+      - description: Данные подписки
+        in: body
+        name: subscription
+        required: true
+        schema:
+          $ref: '#/definitions/models.Subscription'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Подписка успешно создана
+          schema:
+            $ref: '#/definitions/models.RetStruct'
+        "400":
+          description: Неверные данные (отсутствуют обязательные поля, неверный формат
+            UUID, даты)
+          schema:
+            type: string
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            type: string
+      summary: Создание подписки
+      tags:
+      - subscriptions
+  /delete:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет подписку по переданным данным
+      parameters:
+      - description: Данные подписки для удаления
+        in: body
+        name: subscription
+        required: true
+        schema:
+          $ref: '#/definitions/models.Subscription'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешное удаление
+          schema:
+            $ref: '#/definitions/models.RetStruct'
+        "204":
+          description: Не найдено записей для удаления
+          schema:
+            $ref: '#/definitions/models.RetStruct'
+        "400":
+          description: Неверный формат запроса
+          schema:
+            type: string
+        "500":
+          description: Ошибка сервера
+          schema:
+            type: string
+      summary: Удаление подписки
+  /list:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает список всех подписок с поддержкой пагинации
+      parameters:
+      - description: Номер страницы (по умолчанию 1)
+        in: query
+        name: page
+        type: integer
+      - description: Размер страницы (по умолчанию из конфига)
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список подписок
+          schema:
+            items:
+              $ref: '#/definitions/models.Subscription'
+            type: array
+        "204":
+          description: Подписки не найдены
+          schema:
+            $ref: '#/definitions/models.RetStruct'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            type: string
+      summary: Получение списка подписок
+      tags:
+      - subscriptions
+  /read:
+    post:
+      consumes:
+      - application/json
+      description: Возвращает подписки, соответствующие заданным критериям поиска
+      parameters:
+      - description: Критерии поиска подписок
+        in: body
+        name: criteria
+        required: true
+        schema:
+          $ref: '#/definitions/models.Subscription'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Найденные подписки
+          schema:
+            items:
+              $ref: '#/definitions/models.Subscription'
+            type: array
+        "204":
+          description: Подписки не найдены
+          schema:
+            $ref: '#/definitions/models.RetStruct'
+        "400":
+          description: Неверный формат данных
+          schema:
+            type: string
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            type: string
+      summary: Поиск подписок
+      tags:
+      - subscriptions
+  /summa:
+    post:
+      consumes:
+      - application/json
+      description: Возвращает сумму подписок по заданным параметрам
+      parameters:
+      - description: Параметры для расчета суммы
+        in: body
+        name: subscription
+        required: true
+        schema:
+          $ref: '#/definitions/models.Subscription'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный расчет суммы
+          schema:
+            $ref: '#/definitions/models.RetStruct'
+        "204":
+          description: Подписки не найдены
+          schema:
+            $ref: '#/definitions/models.RetStruct'
+        "400":
+          description: Неверный формат запроса или отсутствуют обязательные поля
+          schema:
+            type: string
+        "500":
+          description: Ошибка сервера
+          schema:
+            type: string
+      summary: Расчет суммы подписок
+  /update:
+    put:
+      consumes:
+      - application/json
+      description: 'Обновляет данные подписки по заданным критериям (обязательные
+        поля: service_name и user_id)'
+      parameters:
+      - description: Данные для обновления подписки
+        in: body
+        name: subscription
+        required: true
+        schema:
+          $ref: '#/definitions/models.Subscription'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Подписка успешно обновлена
+          schema:
+            $ref: '#/definitions/models.RetStruct'
+        "204":
+          description: Подписка не найдена
+          schema:
+            $ref: '#/definitions/models.RetStruct'
+        "400":
+          description: Неверные данные (отсутствуют обязательные поля)
+          schema:
+            type: string
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            type: string
+      summary: Обновление подписки
+      tags:
+      - subscriptions
+swagger: "2.0"

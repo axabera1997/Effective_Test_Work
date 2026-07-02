@@ -1,0 +1,6 @@
+.git
+.vscode
+*.md
+*.sqlite
+*.log
+bin
